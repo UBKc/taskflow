@@ -1,0 +1,146 @@
+======================================================================
+TASKFLOW MANUEL GUVENLIK TESTLERI
+======================================================================
+
+Token'lar alindi: umut=True elif=True disari=True
+
+--- A) YETKILENDIRME / ERISIM ---
+
+[ 1] Token'siz istek (GET /api/boards)
+     Beklenen: 401 | Donen: HTTP 401 | GUVENLI
+     Yanit: {"error":"Yetkilendirme başlığı eksik veya hatalı (Bearer token bekleniyor)."}
+
+[ 2] Uye (member) pano silmeye calisiyor
+     Beklenen: 403 | Donen: HTTP 403 | GUVENLI
+     Yanit: {"error":"Bu işlem için board admin yetkisi gereklidir."}
+
+[ 3] Uye (member) uye davet ediyor
+     Beklenen: 403 | Donen: HTTP 403 | GUVENLI
+     Yanit: {"error":"Bu işlem için board admin yetkisi gereklidir."}
+
+[ 4] IDOR: uyesi olmayan kullanici board detayi
+     Beklenen: 403 | Donen: HTTP 403 | GUVENLI
+     Yanit: {"error":"Bu board üzerinde yetkiniz yok."}
+
+[ 5] IDOR: uyesi olmayan kullanici listeler
+     Beklenen: 403 | Donen: HTTP 403 | GUVENLI
+     Yanit: {"error":"Bu board üzerinde yetkiniz yok."}
+
+[ 6] IDOR: uyesi olmayan kullanici kart tasima
+     Beklenen: 403 | Donen: HTTP 403 | GUVENLI
+     Yanit: {"error":"Bu board üzerinde yetkiniz yok."}
+
+[ 7] IDOR: uyesi olmayan kullanici liste guncelleme
+     Beklenen: 403 | Donen: HTTP 403 | GUVENLI
+     Yanit: {"error":"Bu board üzerinde yetkiniz yok."}
+
+--- B) KIMLIK DOGRULAMA / OTURUM ---
+
+[ 8] Kurcalanmis JWT (payload degistirilmis, imza ayni)
+     Beklenen: 401 | Donen: HTTP 401 | GUVENLI
+     Yanit: {"error":"Geçersiz veya süresi dolmuş token."}
+
+[ 9] alg:none token (imzasiz)
+     Beklenen: 401 | Donen: HTTP 401 | GUVENLI
+     Yanit: {"error":"Geçersiz veya süresi dolmuş token."}
+
+[10] Suresi dolmus token
+     Beklenen: 401 | Donen: HTTP 401 | GUVENLI
+     Yanit: {"error":"Geçersiz veya süresi dolmuş token."}
+
+[11] Cok kisa sifre (1 karakter) ile kayit
+     Beklenen: 400 (reddedilmeli) | Donen: HTTP 400 | GUVENLI
+     Yanit: {"error":"Şifre en az 6 karakter olmalıdır."}
+
+[12] Kullanici numaralandirma (login: olmayan email vs yanlis sifre ayni mesaj mi)
+     Beklenen: ikisi de ayni 401 | Donen: HTTP 401/401 | GUVENLI
+     Yanit: iki durum ayni
+
+[13] Kullanici numaralandirma (register: var olan email)
+     Beklenen: genel mesaj tercih edilir | Donen: HTTP 409 | ACIK/RISK
+     Yanit: {"error":"Bu e-posta ile zaten bir kullanıcı var."}
+
+--- C) GIRDI DOGRULAMA ---
+
+[15] SQLi login bypass denemesi (' OR '1'='1' --)
+     Beklenen: 401 (bypass olmamali) | Donen: HTTP 429 | ACIK/RISK
+     Yanit: {"error":"Çok fazla başarısız deneme. Lütfen bir süre sonra tekrar deneyin."}
+
+[16] SQLi kart basligina (parametreli sorgu literal saklamali)
+     Beklenen: kart olusur, tablo durur | Donen: HTTP 201 | GUVENLI
+     Yanit: {"card":{"id":13,"list_id":1,"title":"x'); DROP TABLE cards;--","description":null,"positi
+
+[17] XSS payload'li kart olusturma (render arayuzde kontrol edilir)
+     Beklenen: 201 (React escape eder) | Donen: HTTP 201 | GUVENLI
+     Yanit: {"card":{"id":14,"list_id":1,"title":"<script>alert('xss')</script>","description":null,"p
+
+[18] Negatif position degeri ile tasima
+     Beklenen: 400 (reddedilmeli) | Donen: HTTP 400 | GUVENLI
+     Yanit: {"error":"list_id pozitif tam sayı, position negatif olmayan tam sayı olmalıdır."}
+
+[181] Gecersiz kart id (abc)
+     Beklenen: temiz hata (500 olmamali ideal) | Donen: HTTP 404 | GUVENLI
+     Yanit: {"error":"İlgili board bulunamadı."}
+
+--- D) YAPILANDIRMA ---
+
+[19] Guvenlik basliklari:
+     X-Powered-By: None
+     Content-Security-Policy: default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self' 'unsafe-inline';script-src-attr 'none';style-src 'self' 'unsafe-inline';upgrade-insecure-requests
+     X-Frame-Options: SAMEORIGIN
+     X-Content-Type-Options: nosniff
+     Strict-Transport-Security: max-age=31536000; includeSubDomains
+
+[19] Guvenlik basliklari (CSP/XFO/XCTO/HSTS) mevcut mu
+     Beklenen: hepsi olmali | Donen: HTTP var | GUVENLI
+     Yanit: 
+
+[20] X-Powered-By surum sizintisi = None
+     Beklenen: olmamali | Donen: HTTP yok | GUVENLI
+     Yanit: None
+
+[21] CORS Access-Control-Allow-Origin = http://localhost:5173
+     Beklenen: * olmamali (whitelist) | Donen: HTTP http://localhost:5173 | GUVENLI
+     Yanit: 
+
+[22] Hata yanitinda stack trace sizintisi (bozuk JSON)
+     Beklenen: stack sizmamali | Donen: HTTP temiz | GUVENLI
+     Yanit: {"error":"Expected property name or '}' in JSON at position 1 (line 1 column 2)"
+
+--- E) BRUTE FORCE / RATE LIMIT ---
+
+[14] Brute force / rate limit (12 hizli hatali giris)
+     Beklenen: 429 gorulmeli | Donen: HTTP 429 var | GUVENLI
+     Yanit: [429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429, 429]
+
+
+======================================================================
+OZET TABLOSU
+======================================================================
+  # | Sonuc      | Test
+----------------------------------------------------------------------
+  1 | GUVENLI    | Token'siz istek (GET /api/boards)
+  2 | GUVENLI    | Uye (member) pano silmeye calisiyor
+  3 | GUVENLI    | Uye (member) uye davet ediyor
+  4 | GUVENLI    | IDOR: uyesi olmayan kullanici board detayi
+  5 | GUVENLI    | IDOR: uyesi olmayan kullanici listeler
+  6 | GUVENLI    | IDOR: uyesi olmayan kullanici kart tasima
+  7 | GUVENLI    | IDOR: uyesi olmayan kullanici liste guncelleme
+  8 | GUVENLI    | Kurcalanmis JWT (payload degistirilmis, imza ayni)
+  9 | GUVENLI    | alg:none token (imzasiz)
+ 10 | GUVENLI    | Suresi dolmus token
+ 11 | GUVENLI    | Cok kisa sifre (1 karakter) ile kayit
+ 12 | GUVENLI    | Kullanici numaralandirma (login: olmayan email vs yanli
+ 13 | ACIK/RISK  | Kullanici numaralandirma (register: var olan email)
+ 15 | ACIK/RISK  | SQLi login bypass denemesi (' OR '1'='1' --)
+ 16 | GUVENLI    | SQLi kart basligina (parametreli sorgu literal saklamal
+ 17 | GUVENLI    | XSS payload'li kart olusturma (render arayuzde kontrol 
+ 18 | GUVENLI    | Negatif position degeri ile tasima
+181 | GUVENLI    | Gecersiz kart id (abc)
+ 19 | GUVENLI    | Guvenlik basliklari (CSP/XFO/XCTO/HSTS) mevcut mu
+ 20 | GUVENLI    | X-Powered-By surum sizintisi = None
+ 21 | GUVENLI    | CORS Access-Control-Allow-Origin = http://localhost:517
+ 22 | GUVENLI    | Hata yanitinda stack trace sizintisi (bozuk JSON)
+ 14 | GUVENLI    | Brute force / rate limit (12 hizli hatali giris)
+----------------------------------------------------------------------
+Toplam: 23 test | Guvenli: 21 | Acik/Risk: 2

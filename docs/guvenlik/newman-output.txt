@@ -1,0 +1,78 @@
+(node:38036) [DEP0176] DeprecationWarning: fs.F_OK is deprecated, use fs.constants.F_OK instead
+(Use `node --trace-deprecation ...` to show where the warning was created)
+newman
+
+TaskFlow API
+
+□ Guvenlik - Negatif Testler
+└ Kurulum: Admin Giris (umut)
+  POST http://localhost:4000/api/auth/login [200 OK, 1.32kB, 118ms]
+  √  giris basarili (200)
+
+└ Kurulum: Uye Giris (elif)
+  POST http://localhost:4000/api/auth/login [200 OK, 1.33kB, 58ms]
+  √  giris basarili (200)
+
+└ Kurulum: Disaridan Kullanici Kayit
+  POST http://localhost:4000/api/auth/register [409 Conflict, 1.1kB, 3ms]
+  √  kayit 201 veya zaten var 409
+
+└ Kurulum: Disaridan Giris
+  POST http://localhost:4000/api/auth/login [200 OK, 1.33kB, 57ms]
+  √  giris basarili (200)
+
+└ 401 - Token'siz erisim (GET /api/boards)
+  GET http://localhost:4000/api/boards [401 Unauthorized, 1.04kB, 3ms]
+  √  401 Unauthorized
+
+└ 401 - Kurcalanmis / gecersiz token
+  GET http://localhost:4000/api/boards [401 Unauthorized, 1.01kB, 4ms]
+  √  401 Unauthorized
+
+└ 403 - Uye pano siliyor (DELETE /api/boards/1)
+  DELETE http://localhost:4000/api/boards/1 [403 Forbidden, 1.02kB, 6ms]
+  √  403 Forbidden
+
+└ 403 - Uye uye davet ediyor (POST members)
+  POST http://localhost:4000/api/boards/1/members [403 Forbidden, 1.02kB, 3ms]
+  √  403 Forbidden
+
+└ 403 - IDOR: disaridan board detayi (GET /api/boards/1)
+  GET http://localhost:4000/api/boards/1 [403 Forbidden, 1kB, 4ms]
+  √  403 Forbidden
+
+└ 400 - Cok kisa sifre ile kayit
+  POST http://localhost:4000/api/auth/register [400 Bad Request, 1.1kB, 4ms]
+  √  400 Bad Request
+
+└ 401 - SQLi login bypass denemesi
+  POST http://localhost:4000/api/auth/login [401 Unauthorized, 1.09kB, 3ms]
+  √  401 (bypass yok)
+
+└ 404 - Gecersiz kart id ile tasima
+  PATCH http://localhost:4000/api/cards/abc/move [404 Not Found, 995B, 2ms]
+  √  404 (temiz hata, 500 degil)
+
+└ 400 - Negatif position ile tasima
+  PATCH http://localhost:4000/api/cards/1/move [400 Bad Request, 1.05kB, 10ms]
+  √  400 Bad Request
+
+┌─────────────────────────┬───────────────────┬──────────────────┐
+│                         │          executed │           failed │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│              iterations │                 1 │                0 │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│                requests │                13 │                0 │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│            test-scripts │                13 │                0 │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│      prerequest-scripts │                 0 │                0 │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│              assertions │                13 │                0 │
+├─────────────────────────┴───────────────────┴──────────────────┤
+│ total run duration: 1347ms                                     │
+├────────────────────────────────────────────────────────────────┤
+│ total data received: 1.4kB (approx)                            │
+├────────────────────────────────────────────────────────────────┤
+│ average response time: 21ms [min: 2ms, max: 118ms, s.d.: 33ms] │
+└────────────────────────────────────────────────────────────────┘
