@@ -1,5 +1,7 @@
 # TaskFlow – Kanban Görev Takip Uygulaması
 
+*Trello-like Kanban app (React, Express, PostgreSQL, JWT) with role-based boards and drag & drop. Security-tested with OWASP ZAP and 23 manual tests; all high, medium and low risk findings were fixed.*
+
 Trello benzeri bir görev takip uygulaması. Kullanıcı pano oluşturuyor, panoya liste (Yapılacak / Yapılıyor / Bitti gibi) ve listelere kart ekliyor, kartları sürükle-bırak ile listeler arasında taşıyor. Panoya e-postayla başka kullanıcılar davet edilebiliyor, her üyenin rolü (yönetici / üye) var.
 
 Yaz stajımda geliştirdim. İlk sürümü bitirdikten sonra uygulamaya OWASP ZAP ve elle yazdığım testlerle güvenlik testi yaptım, bulunan açıkları kapattım.
