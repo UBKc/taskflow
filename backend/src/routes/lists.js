@@ -8,10 +8,9 @@ import {
   deleteList,
 } from '../controllers/listController.js';
 
-// mergeParams: üst route'tan gelen :boardId'ye erişmek için
+// ust route'taki :boardId icin
 const router = Router({ mergeParams: true });
 
-// Kimlik doğrulama + board üyeliği (member yeterli)
 router.use(authenticate);
 router.use(authorizeBoard({ source: 'board', role: 'member' }));
 

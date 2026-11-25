@@ -1,11 +1,5 @@
-/**
- * Uygulama içi onay penceresi.
- *
- * NOT: Daha önce window.confirm() kullanılıyordu; ancak native diyaloglar bazı
- * ortamlarda (gömülü tarayıcılar, sandbox'lı iframe'ler) engellenir ve sessizce
- * false döner — bu da silme işleminin hiç çalışmamasına yol açıyordu.
- * Bu bileşen her ortamda çalışır ve arayüzle tutarlı görünür.
- */
+// window.confirm bazi tarayicilarda engellenip false donuyordu, silme calismiyordu
+// o yuzden kendi onay penceremi yaptim
 export default function ConfirmDialog({
   open,
   title = 'Emin misiniz?',

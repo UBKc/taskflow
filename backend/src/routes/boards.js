@@ -13,7 +13,6 @@ import {
 
 const router = Router();
 
-// Tüm board route'ları kimlik doğrulama gerektirir
 router.use(authenticate);
 
 /**

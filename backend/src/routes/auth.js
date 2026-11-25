@@ -5,11 +5,11 @@ import { authenticate } from '../middleware/auth.js';
 
 const router = Router();
 
-// Brute-force ve kullanıcı numaralandırmaya karşı hız sınırı.
-// Yalnızca BAŞARISIZ istekler sayılır; meşru girişler etkilenmez.
+// brute force'a karsi: 15 dk icinde 5 basarisiz deneme
+// sadece basarisiz istekler sayiliyor
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 dakika
-  max: 5, // 15 dk içinde en fazla 5 başarısız deneme
+  windowMs: 15 * 60 * 1000,
+  max: 5,
   skipSuccessfulRequests: true,
   standardHeaders: true,
   legacyHeaders: false,

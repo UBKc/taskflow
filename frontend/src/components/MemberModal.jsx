@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import api from '../api/client';
 
-// Admin için üye davet/çıkarma modalı.
 export default function MemberModal({ boardId, members, ownerId, onClose, onChanged }) {
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');

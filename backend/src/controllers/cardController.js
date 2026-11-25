@@ -1,17 +1,12 @@
 import { pool, query } from '../db/pool.js';
 import { asyncHandler } from '../middleware/errorHandler.js';
 
-/**
- * Bir kartın etiket id'lerini getirir (yardımcı).
- */
 async function getCardLabelIds(cardId) {
   const r = await query('SELECT label_id FROM card_labels WHERE card_id = $1', [cardId]);
   return r.rows.map((row) => row.label_id);
 }
 
-/**
- * GET /api/lists/:listId/cards
- */
+// GET /api/lists/:listId/cards
 export const getCards = asyncHandler(async (req, res) => {
   const listId = Number(req.params.listId);
   const result = await query(
@@ -39,9 +34,7 @@ export const getCards = asyncHandler(async (req, res) => {
   res.json({ cards });
 });
 
-/**
- * POST /api/lists/:listId/cards
- */
+// POST /api/lists/:listId/cards
 export const createCard = asyncHandler(async (req, res) => {
   const listId = Number(req.params.listId);
   const { title, description = null, position, due_date = null, assigned_to = null } = req.body || {};
@@ -50,7 +43,7 @@ export const createCard = asyncHandler(async (req, res) => {
     return res.status(400).json({ error: 'title alanı zorunludur.' });
   }
 
-  // assigned_to verildiyse, atanacak kullanıcı board üyesi olmalı
+  // atanan kisi board uyesi olmali
   if (assigned_to) {
     const member = await query(
       'SELECT 1 FROM board_members WHERE board_id = $1 AND user_id = $2',
@@ -80,9 +73,7 @@ export const createCard = asyncHandler(async (req, res) => {
   res.status(201).json({ card: { ...result.rows[0], label_ids: [] } });
 });
 
-/**
- * PUT /api/lists/:listId/cards/:cardId
- */
+// PUT /api/lists/:listId/cards/:cardId
 export const updateCard = asyncHandler(async (req, res) => {
   const listId = Number(req.params.listId);
   const cardId = Number(req.params.cardId);
@@ -125,9 +116,7 @@ export const updateCard = asyncHandler(async (req, res) => {
   res.json({ card: { ...result.rows[0], label_ids: labelIds } });
 });
 
-/**
- * DELETE /api/lists/:listId/cards/:cardId
- */
+// DELETE /api/lists/:listId/cards/:cardId
 export const deleteCard = asyncHandler(async (req, res) => {
   const listId = Number(req.params.listId);
   const cardId = Number(req.params.cardId);
@@ -141,13 +130,8 @@ export const deleteCard = asyncHandler(async (req, res) => {
   res.status(204).send();
 });
 
-/**
- * PATCH /api/cards/:id/move
- * Kartı (isteğe bağlı olarak) başka bir listeye taşır ve hedef pozisyona yerleştirir.
- * Hedef listedeki diğer kartların pozisyonları kaydırılır (drag & drop mantığı).
- *
- * Body: { list_id: <hedef liste>, position: <hedef sıra> }
- */
+// PATCH /api/cards/:id/move  body: { list_id, position }
+// karti baska listeye tasiyabiliyor, araya girdigi yerdeki kartlar kayiyor
 export const moveCard = asyncHandler(async (req, res) => {
   const cardId = Number(req.params.id);
   const { list_id: targetListId, position: targetPosition } = req.body || {};
@@ -155,7 +139,6 @@ export const moveCard = asyncHandler(async (req, res) => {
   if (targetListId === undefined || targetPosition === undefined) {
     return res.status(400).json({ error: 'list_id ve position alanları zorunludur.' });
   }
-  // Girdi doğrulama: list_id pozitif tam sayı, position negatif olamaz.
   if (!Number.isInteger(targetListId) || targetListId <= 0 || !Number.isInteger(targetPosition) || targetPosition < 0) {
     return res.status(400).json({ error: 'list_id pozitif tam sayı, position negatif olmayan tam sayı olmalıdır.' });
   }
@@ -164,7 +147,6 @@ export const moveCard = asyncHandler(async (req, res) => {
   try {
     await client.query('BEGIN');
 
-    // Kartın mevcut durumu
     const cardRes = await client.query('SELECT id, list_id FROM cards WHERE id = $1', [cardId]);
     if (cardRes.rows.length === 0) {
       await client.query('ROLLBACK');
@@ -172,28 +154,28 @@ export const moveCard = asyncHandler(async (req, res) => {
     }
     const sourceListId = cardRes.rows[0].list_id;
 
-    // Hedef liste kartla aynı board'a mı ait? (authorizeBoard board'u karttan çözdü)
+    // hedef liste ayni board'da mi
     const targetList = await client.query('SELECT board_id FROM lists WHERE id = $1', [targetListId]);
     if (targetList.rows.length === 0 || targetList.rows[0].board_id !== req.boardId) {
       await client.query('ROLLBACK');
       return res.status(400).json({ error: 'Hedef liste bu board üzerinde değil.' });
     }
 
-    // 1) Kartı geçici olarak kaynaktan çıkar: sonraki kartları yukarı kaydır
+    // 1) karti kaynak listeden cikar, alttakileri yukari kaydir
     await client.query(
       `UPDATE cards SET position = position - 1
         WHERE list_id = $1 AND position > (SELECT position FROM cards WHERE id = $2)`,
       [sourceListId, cardId]
     );
 
-    // 2) Hedef listede yer aç: hedef pozisyon ve sonrasını aşağı kaydır
+    // 2) hedef listede yer ac
     await client.query(
       `UPDATE cards SET position = position + 1
         WHERE list_id = $1 AND position >= $2`,
       [targetListId, targetPosition]
     );
 
-    // 3) Kartı yeni yerine koy
+    // 3) karti yerine koy
     const updated = await client.query(
       `UPDATE cards SET list_id = $1, position = $2
         WHERE id = $3
@@ -213,10 +195,7 @@ export const moveCard = asyncHandler(async (req, res) => {
   }
 });
 
-/**
- * POST /api/cards/:id/labels   Body: { label_id }
- * Karta etiket atar (etiket kartla aynı board'a ait olmalı).
- */
+// POST /api/cards/:id/labels  body: { label_id } - etiket ayni board'dan olmali
 export const addLabelToCard = asyncHandler(async (req, res) => {
   const cardId = Number(req.params.id);
   const { label_id: labelId } = req.body || {};
@@ -238,10 +217,7 @@ export const addLabelToCard = asyncHandler(async (req, res) => {
   res.status(201).json({ card_id: cardId, label_ids: labelIds });
 });
 
-/**
- * DELETE /api/cards/:id/labels/:labelId
- * Karttan etiket kaldırır.
- */
+// DELETE /api/cards/:id/labels/:labelId
 export const removeLabelFromCard = asyncHandler(async (req, res) => {
   const cardId = Number(req.params.id);
   const labelId = Number(req.params.labelId);

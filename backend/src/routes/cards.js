@@ -11,10 +11,7 @@ import {
   removeLabelFromCard,
 } from '../controllers/cardController.js';
 
-/**
- * Liste altındaki kartlar: /api/lists/:listId/cards
- * Board, liste (:listId) üzerinden çözülür.
- */
+// /api/lists/:listId/cards, board liste uzerinden bulunuyor
 export const listCardsRouter = Router({ mergeParams: true });
 listCardsRouter.use(authenticate);
 listCardsRouter.use(authorizeBoard({ source: 'list', role: 'member' }));
@@ -127,10 +124,7 @@ listCardsRouter.post('/', createCard);
 listCardsRouter.put('/:cardId', updateCard);
 listCardsRouter.delete('/:cardId', deleteCard);
 
-/**
- * Kart üzerinde tekil işlemler: /api/cards/:id/...
- * Board, kart (:id) üzerinden çözülür.
- */
+// /api/cards/:id/..., board kart uzerinden bulunuyor
 export const cardActionsRouter = Router();
 cardActionsRouter.use(authenticate);
 

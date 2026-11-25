@@ -1,10 +1,7 @@
 import { pool, query } from '../db/pool.js';
 import { asyncHandler } from '../middleware/errorHandler.js';
 
-/**
- * GET /api/boards
- * Giriş yapan kullanıcının üyesi olduğu tüm board'lar (rolüyle birlikte).
- */
+// GET /api/boards - kullanicinin uye oldugu board'lar
 export const listBoards = asyncHandler(async (req, res) => {
   const result = await query(
     `SELECT b.id, b.name, b.owner_id, b.created_at, bm.role
@@ -17,10 +14,7 @@ export const listBoards = asyncHandler(async (req, res) => {
   res.json({ boards: result.rows });
 });
 
-/**
- * GET /api/boards/:id
- * Board detayı: üyeler + listeler + kartlar + etiketler (iç içe).
- */
+// GET /api/boards/:id - uyeler, listeler, kartlar ve etiketlerle birlikte
 export const getBoard = asyncHandler(async (req, res) => {
   const boardId = req.boardId;
 
@@ -71,7 +65,6 @@ export const getBoard = asyncHandler(async (req, res) => {
     [boardId]
   );
 
-  // Kartlara etiketlerini iliştir
   const labelsByCard = new Map();
   for (const { card_id, label_id } of cardLabelsRes.rows) {
     if (!labelsByCard.has(card_id)) labelsByCard.set(card_id, []);
@@ -82,7 +75,6 @@ export const getBoard = asyncHandler(async (req, res) => {
     label_ids: labelsByCard.get(c.id) || [],
   }));
 
-  // Listeleri kartlarıyla birlikte döndür
   const lists = listsRes.rows.map((l) => ({
     ...l,
     cards: cards.filter((c) => c.list_id === l.id),
@@ -96,10 +88,7 @@ export const getBoard = asyncHandler(async (req, res) => {
   });
 });
 
-/**
- * POST /api/boards
- * Board oluşturur; oluşturan kullanıcı otomatik olarak 'admin' üye olur.
- */
+// POST /api/boards - olusturan kisi admin olarak ekleniyor
 export const createBoard = asyncHandler(async (req, res) => {
   const { name } = req.body || {};
   if (!name || !name.trim()) {
@@ -131,9 +120,7 @@ export const createBoard = asyncHandler(async (req, res) => {
   }
 });
 
-/**
- * PUT /api/boards/:id  (sadece admin)
- */
+// PUT /api/boards/:id (admin)
 export const updateBoard = asyncHandler(async (req, res) => {
   const { name } = req.body || {};
   if (!name || !name.trim()) {
@@ -147,18 +134,13 @@ export const updateBoard = asyncHandler(async (req, res) => {
   res.json({ board: result.rows[0] });
 });
 
-/**
- * DELETE /api/boards/:id  (sadece admin)
- */
+// DELETE /api/boards/:id (admin)
 export const deleteBoard = asyncHandler(async (req, res) => {
   await query('DELETE FROM boards WHERE id = $1', [req.boardId]);
   res.status(204).send();
 });
 
-/**
- * POST /api/boards/:id/members  (sadece admin)
- * E-posta ile üye davet eder.
- */
+// POST /api/boards/:id/members (admin) - e-posta ile davet
 export const addMember = asyncHandler(async (req, res) => {
   const { email, role = 'member' } = req.body || {};
   if (!email) {
@@ -190,13 +172,11 @@ export const addMember = asyncHandler(async (req, res) => {
   res.status(201).json({ member: { id: user.id, name: user.name, email: user.email, role } });
 });
 
-/**
- * DELETE /api/boards/:id/members/:userId  (sadece admin)
- */
+// DELETE /api/boards/:id/members/:userId (admin)
 export const removeMember = asyncHandler(async (req, res) => {
   const userId = Number(req.params.userId);
 
-  // Board sahibi çıkarılamaz
+  // board sahibi cikarilamaz
   const boardRes = await query('SELECT owner_id FROM boards WHERE id = $1', [req.boardId]);
   if (boardRes.rows[0]?.owner_id === userId) {
     return res.status(400).json({ error: 'Board sahibi üyelikten çıkarılamaz.' });

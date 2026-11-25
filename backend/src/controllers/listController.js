@@ -1,9 +1,7 @@
 import { query } from '../db/pool.js';
 import { asyncHandler } from '../middleware/errorHandler.js';
 
-/**
- * GET /api/boards/:boardId/lists
- */
+// GET /api/boards/:boardId/lists
 export const getLists = asyncHandler(async (req, res) => {
   const result = await query(
     'SELECT id, board_id, title, position FROM lists WHERE board_id = $1 ORDER BY position, id',
@@ -12,10 +10,7 @@ export const getLists = asyncHandler(async (req, res) => {
   res.json({ lists: result.rows });
 });
 
-/**
- * POST /api/boards/:boardId/lists
- * position verilmezse listenin sonuna eklenir.
- */
+// POST /api/boards/:boardId/lists - position yoksa sona ekleniyor
 export const createList = asyncHandler(async (req, res) => {
   const { title, position } = req.body || {};
   if (!title || !title.trim()) {
@@ -38,10 +33,7 @@ export const createList = asyncHandler(async (req, res) => {
   res.status(201).json({ list: result.rows[0] });
 });
 
-/**
- * PUT /api/boards/:boardId/lists/:listId
- * title ve/veya position güncellenebilir.
- */
+// PUT /api/boards/:boardId/lists/:listId
 export const updateList = asyncHandler(async (req, res) => {
   const listId = Number(req.params.listId);
   const { title, position } = req.body || {};
@@ -65,9 +57,7 @@ export const updateList = asyncHandler(async (req, res) => {
   res.json({ list: result.rows[0] });
 });
 
-/**
- * DELETE /api/boards/:boardId/lists/:listId
- */
+// DELETE /api/boards/:boardId/lists/:listId
 export const deleteList = asyncHandler(async (req, res) => {
   const listId = Number(req.params.listId);
   const result = await query(

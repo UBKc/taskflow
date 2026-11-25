@@ -104,7 +104,6 @@ const definition = {
 
 const options = {
   definition,
-  // Yolları route dosyalarındaki JSDoc bloklarından tara
   apis: ['./src/routes/*.js'],
 };
 

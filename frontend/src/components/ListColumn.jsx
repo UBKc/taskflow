@@ -3,7 +3,6 @@ import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import SortableCard from './SortableCard';
 
-// Bir listeyi (kolon) ve içindeki sürüklenebilir kartları gösterir.
 export default function ListColumn({
   list,
   labelsById,
@@ -16,7 +15,7 @@ export default function ListColumn({
   const [adding, setAdding] = useState(false);
   const [title, setTitle] = useState('');
 
-  // Boş listeye de kart bırakılabilmesi için kolon gövdesi droppable.
+  // bos listeye de kart birakilabilsin
   const { setNodeRef } = useDroppable({ id: `list-${list.id}` });
 
   const submit = async (e) => {

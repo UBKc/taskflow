@@ -5,10 +5,7 @@ import { asyncHandler } from '../middleware/errorHandler.js';
 
 const SALT_ROUNDS = 10;
 
-/**
- * POST /api/auth/register
- * Ad, email ve şifre ile yeni kullanıcı oluşturur.
- */
+// POST /api/auth/register
 export const register = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body || {};
 
@@ -19,7 +16,6 @@ export const register = asyncHandler(async (req, res) => {
     return res.status(400).json({ error: 'Şifre en az 6 karakter olmalıdır.' });
   }
 
-  // E-posta zaten kayıtlı mı? (parametreli sorgu)
   const existing = await query('SELECT id FROM users WHERE email = $1', [email]);
   if (existing.rows.length > 0) {
     return res.status(409).json({ error: 'Bu e-posta ile zaten bir kullanıcı var.' });
@@ -40,10 +36,7 @@ export const register = asyncHandler(async (req, res) => {
   res.status(201).json({ user, token });
 });
 
-/**
- * POST /api/auth/login
- * E-posta + şifre doğrular, JWT döner.
- */
+// POST /api/auth/login
 export const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body || {};
 
@@ -74,10 +67,7 @@ export const login = asyncHandler(async (req, res) => {
   });
 });
 
-/**
- * GET /api/auth/me
- * Geçerli token'a sahip kullanıcının bilgilerini döner.
- */
+// GET /api/auth/me
 export const me = asyncHandler(async (req, res) => {
   const result = await query(
     'SELECT id, name, email, created_at FROM users WHERE id = $1',

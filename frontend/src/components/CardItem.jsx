@@ -1,4 +1,3 @@
-// Tek bir kartı gösterir. (Sürükle-bırak sonraki commit'te eklenecek.)
 export default function CardItem({ card, labelsById, membersById, onDelete, canEdit }) {
   const labels = (card.label_ids || []).map((id) => labelsById[id]).filter(Boolean);
   const assignee = card.assigned_to ? membersById[card.assigned_to] : null;
@@ -23,9 +22,7 @@ export default function CardItem({ card, labelsById, membersById, onDelete, canE
         <p className="text-sm text-slate-800">{card.title}</p>
         {canEdit && (
           <button
-            // Sürükle-bırak (dnd-kit) dinleyicileri kartın tamamına bağlıdır.
-            // pointerdown'ı durdurmazsak tıklama sürükleme sanılıp yutulur ve
-            // onClick hiç çalışmaz. Bu yüzden olayı burada kesiyoruz.
+            // tiklama surukleme sanilip kayboluyordu, pointerdown'i burada durduruyorum
             onPointerDown={(e) => e.stopPropagation()}
             onClick={(e) => {
               e.stopPropagation();

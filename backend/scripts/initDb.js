@@ -1,21 +1,12 @@
-/**
- * Veritabanını hazırlar: kök dizindeki schema.sql (ve isteğe bağlı seed.sql)
- * dosyalarını çalıştırır.
- *
- * Kullanım (backend/ klasöründen):
- *   npm run db:init         -> schema.sql çalıştırır
- *   npm run db:seed         -> schema.sql + seed.sql çalıştırır
- *
- * Docker-compose kullanılıyorsa bu dosyalar konteyner ilk açılışta zaten
- * otomatik çalışır; bu script docker'sız (yerel psql/manuel) senaryolar içindir.
- */
+// schema.sql'i (db:seed ile seed.sql'i de) calistiriyor
+// docker-compose kullaniliyorsa gerek yok, konteyner ilk acilista kendisi calistiriyor
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, resolve } from 'path';
 import { pool } from '../src/db/pool.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const rootDir = resolve(__dirname, '../../'); // proje kök dizini
+const rootDir = resolve(__dirname, '../../');
 
 async function runSqlFile(relativePath) {
   const fullPath = resolve(rootDir, relativePath);

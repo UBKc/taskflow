@@ -1,13 +1,6 @@
-/**
- * Merkezi hata yakalama middleware'i.
- *
- * 2. FAZ (güvenlik sertleştirme): Hata detayları artık istemciye SIZDIRILMAZ.
- * - Stack trace hiçbir zaman yanıtta yer almaz.
- * - Beklenmeyen (5xx) hatalarda veritabanı/iç hata mesajı yerine genel bir
- *   mesaj döndürülür; tüm detaylar yalnızca sunucu loglarına yazılır.
- */
+// 500 hatalarinda detay istemciye gitmiyor, sadece sunucu loguna yaziliyor (zap taramasindan sonra)
 export function errorHandler(err, req, res, next) { // eslint-disable-line no-unused-vars
-  console.error(err); // tam detay sadece sunucu tarafında
+  console.error(err);
 
   const status = err.status || 500;
   const message =
@@ -18,8 +11,5 @@ export function errorHandler(err, req, res, next) { // eslint-disable-line no-un
   res.status(status).json({ error: message });
 }
 
-/**
- * async controller'ları sarmalayıp hataları errorHandler'a iletir.
- */
 export const asyncHandler = (fn) => (req, res, next) =>
   Promise.resolve(fn(req, res, next)).catch(next);

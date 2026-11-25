@@ -22,22 +22,21 @@ export default function BoardDetail() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const [meta, setMeta] = useState(null); // { board, members, labels }
-  const [lists, setLists] = useState([]); // [{ id, title, position, cards: [] }]
+  const [meta, setMeta] = useState(null);
+  const [lists, setLists] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showMembers, setShowMembers] = useState(false);
   const [newListTitle, setNewListTitle] = useState('');
   const [addingList, setAddingList] = useState(false);
   const [activeCard, setActiveCard] = useState(null);
-  // Uygulama içi onay penceresi durumu (window.confirm yerine)
   const [confirmState, setConfirmState] = useState(null);
 
   const askConfirm = (opts) => setConfirmState(opts);
   const closeConfirm = () => setConfirmState(null);
 
   const sensors = useSensors(
-    // 5px hareket olmadan sürükleme başlamaz -> buton tıklamaları çalışmaya devam eder.
+    // 5px hareket olmadan surukleme baslamiyor, butonlara tiklanabiliyor
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
   );
 
@@ -76,7 +75,6 @@ export default function BoardDetail() {
   );
   const isAdmin = myRole === 'admin';
 
-  // --- Sürükle-bırak yardımcıları ---
   const findContainer = (dndId) => {
     if (typeof dndId === 'string' && dndId.startsWith('list-')) {
       return Number(dndId.slice(5));
@@ -92,7 +90,7 @@ export default function BoardDetail() {
     setActiveCard(card || null);
   };
 
-  // Kart farklı bir listenin üzerine gelince listeler arası anlık taşıma yap.
+  // kart baska listenin uzerine gelince hemen o listeye geciyor
   const onDragOver = ({ active, over }) => {
     if (!over) return;
     const activeContainer = findContainer(active.id);
@@ -143,11 +141,10 @@ export default function BoardDetail() {
       await api.patch(`/api/cards/${cardId}/move`, { list_id: listId, position });
     } catch (err) {
       setError(err.response?.data?.error || 'Kart taşınamadı, yeniden yükleniyor.');
-      load(); // sunucuyla yeniden senkronize et
+      load();
     }
   };
 
-  // --- CRUD işlemleri ---
   const addList = async (e) => {
     e.preventDefault();
     if (!newListTitle.trim()) return;

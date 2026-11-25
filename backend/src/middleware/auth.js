@@ -1,9 +1,6 @@
 import { verifyToken } from '../utils/jwt.js';
 
-/**
- * Kimlik doğrulama middleware'i.
- * "Authorization: Bearer <token>" başlığını doğrular ve req.user'ı doldurur.
- */
+// Authorization: Bearer <token> basligini kontrol edip req.user'i dolduruyor
 export function authenticate(req, res, next) {
   const header = req.headers.authorization || '';
   const [scheme, token] = header.split(' ');

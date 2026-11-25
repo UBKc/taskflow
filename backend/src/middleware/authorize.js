@@ -1,12 +1,7 @@
 import { query } from '../db/pool.js';
 
-/**
- * İstekten board id'sini kaynağa göre çözer.
- * - 'board': /api/boards/:id veya :boardId
- * - 'list' : /api/boards/:boardId/lists veya /api/lists/:listId -> list üzerinden board
- * - 'card' : /api/cards/:id -> card -> list -> board
- */
-// id'yi pozitif tam sayıya çevirir; geçersizse null döner (DB'ye hatalı değer gitmez).
+// board id'sini istegin turune gore buluyor: board, list (liste uzerinden) ya da card (kart -> liste -> board)
+// gecersiz id veritabanina gitmesin
 const toId = (v) => {
   const n = Number(v);
   return Number.isInteger(n) && n > 0 ? n : null;
@@ -37,15 +32,8 @@ async function resolveBoardId(source, req) {
   return null;
 }
 
-/**
- * Rol bazlı yetkilendirme middleware fabrikası.
- *
- * @param {object} opts
- * @param {'board'|'list'|'card'} [opts.source='board'] boardId'nin nereden çözüleceği
- * @param {'member'|'admin'} [opts.role='member'] gereken minimum rol
- *
- * Başarılıysa req.boardId ve req.boardRole doldurulur.
- */
+// rol kontrolu. source: board id nereden bulunacak, role: en az member mi admin mi
+// gecerse req.boardId ve req.boardRole doluyor
 export function authorizeBoard({ source = 'board', role = 'member' } = {}) {
   return async (req, res, next) => {
     try {
